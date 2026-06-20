@@ -63,9 +63,11 @@ export default function Navbar({ user = null }) {
                   </SelectTrigger>
                   <SelectContent className="bg-brand-bg text-brand-text border-brand-border">
                     <SelectItem value="All Locations">All Locations</SelectItem>
-                    <SelectItem value="New York">New York</SelectItem>
-                    <SelectItem value="San Francisco">San Francisco</SelectItem>
-                    <SelectItem value="London">London</SelectItem>
+                    <SelectItem value="Arrah">Arrah</SelectItem>
+                    <SelectItem value="Patna">Patna</SelectItem>
+                    <SelectItem value="Delhi">Delhi</SelectItem>
+                    <SelectItem value="Mumbai">Mumbai</SelectItem>
+                    <SelectItem value="Bangalore">Bangalore</SelectItem>
                     <SelectItem value="Remote">Online/Remote</SelectItem>
                   </SelectContent>
                 </Select>
