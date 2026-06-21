@@ -1,7 +1,7 @@
 "use client";
 
-import { Check, Store, X } from "lucide-react";
-import { useState } from "react";
+import { Check, Store, X, RefreshCw } from "lucide-react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import EmptyState from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
@@ -15,29 +15,42 @@ import {
 } from "@/components/ui/table";
 
 export default function MerchantApprovals() {
-  // Mock pending merchants
-  const [merchants, setMerchants] = useState([
-    {
-      id: "m-nike",
-      name: "Nike Retail Outlet",
-      email: "partner@nike.com",
-      website: "https://nike.com",
-      location: "Oregon, USA",
-      submittedAt: "2026-06-18",
-    },
-    {
-      id: "m-msft",
-      name: "Microsoft SaaS Store",
-      email: "partner@microsoft.com",
-      website: "https://microsoft.com",
-      location: "Seattle, USA",
-      submittedAt: "2026-06-16",
-    },
-  ]);
+  const [merchants, setMerchants] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleAction = (id, _action) => {
-    // Action is either approve or reject
-    setMerchants((prev) => prev.filter((m) => m.id !== id));
+  const fetchPendingMerchants = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/admin/merchants?status=pending");
+      const json = await res.json();
+      if (json.status === "success" && json.data) {
+        setMerchants(json.data.merchants || []);
+      }
+    } catch (err) {
+      console.error("Error fetching pending merchants:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPendingMerchants();
+  }, []);
+
+  const handleAction = async (merchantId, action) => {
+    try {
+      const status = action === "approve" ? "approved" : "rejected";
+      const res = await fetch("/api/admin/merchants", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ merchantId, status }),
+      });
+      if (res.ok) {
+        setMerchants((prev) => prev.filter((m) => m._id !== merchantId));
+      }
+    } catch (err) {
+      console.error("Error reviewing merchant:", err);
+    }
   };
 
   return (
@@ -49,7 +62,12 @@ export default function MerchantApprovals() {
         Merchant Signup Review Queue
       </h2>
 
-      {merchants.length > 0
+      {loading ? (
+        <div className="bg-brand-bg border border-brand-border rounded-xl p-8 text-center text-brand-subtext font-semibold shadow-sm">
+          <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-brand-blue" />
+          <span>Loading pending applications...</span>
+        </div>
+      ) : merchants.length > 0
         ? <div className="bg-brand-bg border border-brand-border rounded-xl shadow-sm overflow-hidden flex flex-col justify-between">
             <div className="overflow-x-auto flex-1">
               <Table className="w-full text-xs">
@@ -75,41 +93,47 @@ export default function MerchantApprovals() {
                 <TableBody className="divide-y divide-brand-border font-semibold text-brand-text">
                   {merchants.map((merchant) => (
                     <TableRow
-                      key={merchant.id}
+                      key={merchant._id}
                       className="hover:bg-brand-surface/40 transition-colors border-b border-brand-border last:border-b-0"
                     >
                       <TableCell className="p-4 h-auto">
                         <div className="flex flex-col">
                           <span className="font-bold text-brand-navy">
-                            {merchant.name}
+                            {merchant.businessName}
                           </span>
-                          <a
-                            href={merchant.website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[10px] text-brand-blue hover:underline font-bold mt-0.5"
-                          >
-                            {merchant.website.replace("https://", "")}
-                          </a>
+                          {merchant.website && (
+                            <a
+                              href={merchant.website}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[10px] text-brand-blue hover:underline font-bold mt-0.5"
+                            >
+                              {merchant.website.replace("https://", "").replace("http://", "")}
+                            </a>
+                          )}
                         </div>
                       </TableCell>
-                      <TableCell className="p-4">{merchant.email}</TableCell>
-                      <TableCell className="p-4">{merchant.location}</TableCell>
+                      <TableCell className="p-4">{merchant.contactEmail || "No email"}</TableCell>
+                      <TableCell className="p-4">
+                        {merchant.location
+                          ? `${merchant.location.city || ""}, ${merchant.location.country || "IN"}`
+                          : "IN"}
+                      </TableCell>
                       <TableCell className="p-4 text-brand-subtext">
-                        {merchant.submittedAt}
+                        {merchant.createdAt ? new Date(merchant.createdAt).toLocaleDateString() : "Pending"}
                       </TableCell>
                       <TableCell className="p-4 text-right">
                         <div className="flex justify-end gap-1.5">
                           <Button
                             size="icon"
-                            onClick={() => handleAction(merchant.id, "approve")}
+                            onClick={() => handleAction(merchant._id, "approve")}
                             className="bg-brand-success/15 text-brand-success hover:bg-brand-success hover:text-white border-0 w-8 h-8 rounded-lg transition-all flex items-center justify-center cursor-pointer shadow-none"
                           >
                             <Check className="w-4 h-4" />
                           </Button>
                           <Button
                             size="icon"
-                            onClick={() => handleAction(merchant.id, "reject")}
+                            onClick={() => handleAction(merchant._id, "reject")}
                             className="bg-brand-error/15 text-brand-error hover:bg-brand-error hover:text-white border-0 w-8 h-8 rounded-lg transition-all flex items-center justify-center cursor-pointer shadow-none"
                           >
                             <X className="w-4 h-4" />

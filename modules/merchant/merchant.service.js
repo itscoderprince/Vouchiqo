@@ -95,8 +95,13 @@ export async function listMerchants(searchParams) {
  */
 export async function reviewMerchant(merchantId, status, rejectionReason) {
   const update = { status };
-  if (status === MERCHANT_STATUS.REJECTED && rejectionReason) {
-    update.rejectionReason = rejectionReason;
+  if (status === MERCHANT_STATUS.APPROVED) {
+    update.isVerified = true;
+  } else if (status === MERCHANT_STATUS.REJECTED) {
+    update.isVerified = false;
+    if (rejectionReason) {
+      update.rejectionReason = rejectionReason;
+    }
   }
 
   const merchant = await Merchant.findByIdAndUpdate(

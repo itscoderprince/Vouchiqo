@@ -14,7 +14,7 @@ export default function Topbar({ title = "Dashboard", user: propUser = null }) {
     role: authUser.role,
   } : propUser;
   return (
-    <header className="h-16 bg-brand-bg border-b border-brand-border flex items-center justify-between px-6 sticky top-0 z-40 shadow-sm">
+    <header className="h-[72px] bg-brand-bg border-b border-brand-border flex items-center justify-between px-6 sticky top-0 z-40 shadow-sm">
       {/* Left section: Sidebar Trigger and title */}
       <div className="flex items-center gap-3">
         <SidebarTrigger className="text-brand-text hover:text-brand-blue" />

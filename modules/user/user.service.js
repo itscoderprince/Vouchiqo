@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import UserProfile from "@/modules/user/user.model";
 import { NotFoundError } from "@/utils/app-error";
 
@@ -35,9 +36,29 @@ export async function getProfile(authId) {
  * @param {object} data - Validated update data
  */
 export async function updateProfile(authId, data) {
+  const { name, phone, ...profileData } = data;
+
+  if (name !== undefined || phone !== undefined) {
+    const userUpdate = {};
+    if (name !== undefined) userUpdate.name = name;
+    if (phone !== undefined) {
+      userUpdate.phone = phone;
+      userUpdate.phoneNumber = phone;
+    }
+    
+    const query = { $or: [{ id: authId }, { _id: authId }] };
+    try {
+      if (mongoose.Types.ObjectId.isValid(authId)) {
+        query.$or.push({ _id: new mongoose.Types.ObjectId(authId) });
+      }
+    } catch (e) {}
+
+    await mongoose.connection.db.collection("user").updateOne(query, { $set: userUpdate });
+  }
+
   const profile = await UserProfile.findOneAndUpdate(
     { authId },
-    { $set: data },
+    { $set: profileData },
     { new: true, runValidators: true, upsert: true },
   );
   return profile;

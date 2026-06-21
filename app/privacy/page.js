@@ -1,8 +1,16 @@
-"use client";
-
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { ShieldCheck, BookOpen, Clock } from "lucide-react";
+import { ShieldCheck, Clock } from "lucide-react";
+
+export const metadata = {
+  title: "Privacy Policy | Vouchiqo",
+  description: "Learn how Vouchiqo collects, uses, and safeguards your personal data, customer preferences, and geolocation coordinates.",
+  openGraph: {
+    title: "Privacy Policy | Vouchiqo",
+    description: "Learn how Vouchiqo collects, uses, and safeguards your personal data, customer preferences, and geolocation coordinates.",
+    type: "website",
+  },
+};
 
 export default function PrivacyPolicy() {
   return (

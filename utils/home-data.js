@@ -131,6 +131,7 @@ export const CUSTOMER_TESTIMONIALS = [
     author: "Sarah Jenkins",
     role: "Developer",
     rating: 5,
+    savings: "Saved ₹4,500",
   },
   {
     quote:
@@ -138,6 +139,7 @@ export const CUSTOMER_TESTIMONIALS = [
     author: "Marcus Vance",
     role: "Shopify Merchant",
     rating: 5,
+    savings: "Saved ₹12,800",
   },
   {
     quote:
@@ -145,6 +147,31 @@ export const CUSTOMER_TESTIMONIALS = [
     author: "Jessica Croft",
     role: "Bargain Hunter",
     rating: 5,
+    savings: "Saved ₹2,200",
+  },
+  {
+    quote:
+      "I saved over ₹5,000 on Home Improvement items for my new house in Ranchi using Marbella's coupons. 100% verified!",
+    author: "Anish Sharma",
+    role: "Homeowner",
+    rating: 5,
+    savings: "Saved ₹5,400",
+  },
+  {
+    quote:
+      "Finding working codes for flights and stays used to take hours. On Vouchiqo, I booked a trip to Goa and saved instantly. High trust, zero hassle.",
+    author: "Pooja Roy",
+    role: "Travel Vlogger",
+    rating: 5,
+    savings: "Saved ₹8,900",
+  },
+  {
+    quote:
+      "Revived an expired Notion credits offer. The system is extremely simple and actually gets the merchant to approve extensions. Unbelievable!",
+    author: "Rohan Das",
+    role: "Startup Founder",
+    rating: 5,
+    savings: "Saved ₹15,000",
   },
 ];
 

@@ -1,5 +1,5 @@
 import { connectDB } from "@/lib/mongodb";
-import { listAllCoupons, setCouponFlags } from "@/modules/admin/admin.service";
+import { listAllCoupons, updateCouponModerationState } from "@/modules/admin/admin.service";
 import { requireRole } from "@/modules/auth/auth.middleware";
 import { ok } from "@/utils/api-response";
 import { asyncHandler } from "@/utils/async-handler";
@@ -10,8 +10,6 @@ export const dynamic = "force-dynamic";
 /**
  * GET /api/admin/coupons
  * List all coupons regardless of status. Admin only.
- *
- * Query params: page, limit, status
  */
 export const GET = asyncHandler(async (request) => {
   await connectDB();
@@ -24,21 +22,21 @@ export const GET = asyncHandler(async (request) => {
 
 /**
  * PUT /api/admin/coupons
- * Set featured/hot flags on a coupon. Admin only.
- * Also clears the Redis homepage cache.
- *
- * Body: { couponId: string, isFeatured?: boolean, isHot?: boolean }
+ * Set featured/hot/verified flags on a coupon. Admin only.
  */
 export const PUT = asyncHandler(async (request) => {
   await connectDB();
   await requireRole(request, ROLES.ADMIN);
 
-  const { couponId, isFeatured, isHot } = await request.json();
+  const { couponId, isFeatured, isHot, isVerified, status, rejectionReason } = await request.json();
 
-  const flags = {};
-  if (isFeatured !== undefined) flags.isFeatured = isFeatured;
-  if (isHot !== undefined) flags.isHot = isHot;
+  const update = {};
+  if (isFeatured !== undefined) update.isFeatured = isFeatured;
+  if (isHot !== undefined) update.isHot = isHot;
+  if (isVerified !== undefined) update.isVerified = isVerified;
+  if (status !== undefined) update.status = status;
+  if (rejectionReason !== undefined) update.rejectionReason = rejectionReason;
 
-  const coupon = await setCouponFlags(couponId, flags);
-  return ok(coupon, "Coupon flags updated");
+  const coupon = await updateCouponModerationState(couponId, update);
+  return ok(coupon, "Coupon updated successfully");
 });

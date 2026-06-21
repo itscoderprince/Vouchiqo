@@ -32,11 +32,19 @@ const userProfileSchema = new Schema(
     // Merchants the user follows
     followedMerchants: [{ type: Schema.Types.ObjectId, ref: "Merchant" }],
 
+    // User's shopping interest categories
+    interests: [{ type: String }],
+
     location: {
       city: { type: String, trim: true },
       state: { type: String, trim: true },
       country: { type: String, trim: true },
     },
+
+    // Notification settings
+    emailNotifications: { type: Boolean, default: true },
+    smsNotifications: { type: Boolean, default: false },
+    expiryAlerts: { type: Boolean, default: true },
 
     isActive: { type: Boolean, default: true },
     totalSavings: { type: Number, default: 0 },

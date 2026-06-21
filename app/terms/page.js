@@ -1,8 +1,16 @@
-"use client";
-
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { ShieldAlert, BookOpen, Clock } from "lucide-react";
+import { BookOpen, Clock } from "lucide-react";
+
+export const metadata = {
+  title: "Terms of Service | Vouchiqo",
+  description: "Read the Terms of Service for Vouchiqo. Understand user responsibilities, merchant campaign rules, registration requirements, and liability disclaimers.",
+  openGraph: {
+    title: "Terms of Service | Vouchiqo",
+    description: "Read the Terms of Service for Vouchiqo. Understand user responsibilities, merchant campaign rules, registration requirements, and liability disclaimers.",
+    type: "website",
+  },
+};
 
 export default function TermsOfService() {
   return (

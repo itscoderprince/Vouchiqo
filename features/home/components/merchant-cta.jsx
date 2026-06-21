@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 export function MerchantCTA() {
   return (
     <section className="bg-brand-navy text-white py-16 px-4 border-t border-white/10 text-center relative overflow-hidden animate-fade-in-scale">
-      <div className="absolute inset-0 bg-brand-gradient opacity-10"></div>
       <div className="max-w-2xl mx-auto space-y-6 relative z-10 animate-fade-in-up">
         <h2 className="text-2xl md:text-3xl font-extrabold font-heading tracking-tight leading-tight">
           Grow Your Business With Vouchiqo

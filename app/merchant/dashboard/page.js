@@ -54,12 +54,11 @@ export default function MerchantDashboard() {
 
   return (
     <DashboardLayout
-      title="Merchant Dashboard"k
+      title="Merchant Dashboard"
       user={{ name: merchant?.businessName || "Merchant", role: "merchant" }}
     >
       {/* Welcome Merchant Banner */}
-      <div className="bg-brand-navy text-white p-6 rounded-xl relative overflow-hidden shadow-sm flex items-center justify-between">
-        <div className="absolute inset-0 bg-brand-gradient opacity-10" />
+      <div className="bg-brand-navy text-white p-6 rounded-[16px] relative overflow-hidden shadow-sm flex items-center justify-between">
         <div className="relative z-10 space-y-1">
           <h2 className="text-xl font-bold font-heading">
             Partner Store:{" "}

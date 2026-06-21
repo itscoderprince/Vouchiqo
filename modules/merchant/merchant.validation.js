@@ -17,19 +17,35 @@ export const createMerchantSchema = z.object({
     ),
 
   description: z.string().max(500).optional(),
+  shortDescription: z.string().max(300).optional(),
+  longDescription: z.string().max(1000).optional(),
 
   category: z.enum(COUPON_CATEGORIES),
 
   location: z
     .object({
+      address: z.string().optional(),
+      pincode: z.string().optional(),
       city: z.string().optional(),
       state: z.string().optional(),
       country: z.string().default("IN"),
+      coordinates: z
+        .object({
+          lat: z.number().optional(),
+          lng: z.number().optional(),
+        })
+        .optional(),
     })
     .optional(),
 
-  contactEmail: z.string().email().optional(),
-  website: z.string().url().optional(),
+  contactEmail: z.string().email().or(z.string().max(0)).optional(),
+  contactPhone: z.string().optional(),
+  whatsappNumber: z.string().optional(),
+  website: z.string().url().or(z.string().max(0)).optional(),
+  businessType: z.enum(["online", "physical", "both"]).optional(),
+  operatingHours: z.record(z.any()).optional(),
+  logo: z.string().optional(),
+  banner: z.string().optional(),
 });
 
 export const updateMerchantSchema = createMerchantSchema.partial();

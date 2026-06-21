@@ -11,6 +11,7 @@ import {
   REDIS_TTL,
 } from "@/utils/constants";
 import { buildMeta, parsePagination, parseSort } from "@/utils/pagination";
+import { escapeRegex } from "@/lib/security";
 
 const SORTABLE_FIELDS = [
   "createdAt",
@@ -93,9 +94,12 @@ export async function listCoupons(searchParams) {
     filter.status = COUPON_STATUS.ACTIVE;
   }
 
-  // Only apply expiresAt restriction for public active deals lists
-  if (filter.status === COUPON_STATUS.ACTIVE && !searchParams.get("allDates")) {
-    filter.expiresAt = { $gt: new Date() };
+  // Public active deals must be verified and unexpired
+  if (filter.status === COUPON_STATUS.ACTIVE) {
+    filter.isVerified = true;
+    if (!searchParams.get("allDates")) {
+      filter.expiresAt = { $gt: new Date() };
+    }
   }
 
   const merchantId = searchParams.get("merchantId");
@@ -103,17 +107,31 @@ export async function listCoupons(searchParams) {
 
   const category = searchParams.get("category");
   const city = searchParams.get("city");
+  const pincode = searchParams.get("pincode");
   const discountType = searchParams.get("discountType");
   const search = searchParams.get("search");
 
   if (category) filter.category = category;
-  if (city) filter["location.city"] = new RegExp(city, "i");
+  if (city) filter["location.city"] = new RegExp(escapeRegex(city), "i");
   if (discountType) filter.discountType = discountType;
   if (search) filter.$text = { $search: search };
 
+  if (pincode) {
+    const merchants = await Merchant.find({ "location.pincode": pincode }).select("_id").lean();
+    const merchantIds = merchants.map((m) => m._id);
+    if (filter.merchantId) {
+      const singleId = filter.merchantId.toString();
+      filter.merchantId = merchantIds.map(m => m.toString()).includes(singleId)
+        ? singleId
+        : null;
+    } else {
+      filter.merchantId = { $in: merchantIds };
+    }
+  }
+
   const [coupons, total] = await Promise.all([
     Coupon.find(filter)
-      .populate("merchantId", "businessName slug logo")
+      .populate("merchantId", "businessName slug logo location")
       .sort(sort)
       .skip(skip)
       .limit(limit)
@@ -133,6 +151,7 @@ export async function getFeaturedCoupons() {
 
   const coupons = await Coupon.find({
     isFeatured: true,
+    isVerified: true,
     status: COUPON_STATUS.ACTIVE,
     expiresAt: { $gt: new Date() },
   })
@@ -158,6 +177,7 @@ export async function getTrendingCoupons() {
 
   const coupons = await Coupon.find({
     isHot: true,
+    isVerified: true,
     status: COUPON_STATUS.ACTIVE,
     expiresAt: { $gt: new Date() },
   })

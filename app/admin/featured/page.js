@@ -1,7 +1,7 @@
 "use client";
 
-import { Search, Star, StarOff } from "lucide-react";
-import { useState } from "react";
+import { Search, Star, StarOff, RefreshCw } from "lucide-react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,50 +21,53 @@ import {
 
 export default function FeaturedDeals() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [coupons, setCoupons] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [coupons, setCoupons] = useState([
-    {
-      id: "c1",
-      brand: "Zomato Delivery",
-      title: "50% off next 5 orders",
-      isFeatured: true,
-    },
-    {
-      id: "c2",
-      brand: "Airbnb Stays",
-      title: "Save $20 on luxury bookings",
-      isFeatured: true,
-    },
-    {
-      id: "c3",
-      brand: "Notion Workspace",
-      title: "$50 Free Plus credits",
-      isFeatured: true,
-    },
-    {
-      id: "c4",
-      brand: "Starbucks Coffee",
-      title: "BOGO tall handcrafted espresso",
-      isFeatured: false,
-    },
-  ]);
-
-  const handleToggleFeatured = (id) => {
-    setCoupons((prev) =>
-      prev.map((c) => {
-        if (c.id === id) {
-          return { ...c, isFeatured: !c.isFeatured };
-        }
-        return c;
-      }),
-    );
+  const fetchCoupons = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/admin/coupons");
+      const json = await res.json();
+      if (json.status === "success" && json.data) {
+        setCoupons(json.data.coupons || []);
+      }
+    } catch (err) {
+      console.error("Error fetching admin coupons:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const filteredCoupons = coupons.filter(
-    (c) =>
-      c.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.title.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  useEffect(() => {
+    fetchCoupons();
+  }, []);
+
+  const handleToggleFeatured = async (couponId, isFeatured) => {
+    try {
+      const res = await fetch("/api/admin/coupons", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ couponId, isFeatured: !isFeatured }),
+      });
+      if (res.ok) {
+        setCoupons((prev) =>
+          prev.map((c) => (c._id === couponId ? { ...c, isFeatured: !isFeatured } : c))
+        );
+      }
+    } catch (err) {
+      console.error("Error toggling featured status:", err);
+    }
+  };
+
+  const filteredCoupons = coupons.filter((c) => {
+    const brand = c.merchantId?.businessName || "";
+    const title = c.title || "";
+    return (
+      brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  });
 
   return (
     <DashboardLayout
@@ -107,50 +110,67 @@ export default function FeaturedDeals() {
               </TableRow>
             </TableHeader>
             <TableBody className="divide-y divide-brand-border font-semibold text-brand-text">
-              {filteredCoupons.map((coupon, idx) => (
-                <TableRow
-                  key={idx}
-                  className="hover:bg-brand-surface/40 transition-colors border-b border-brand-border last:border-b-0"
-                >
-                  <TableCell className="p-4 font-bold text-brand-navy h-auto">
-                    {coupon.brand}
-                  </TableCell>
-                  <TableCell className="p-4">{coupon.title}</TableCell>
-                  <TableCell className="p-4">
-                    <Badge
-                      variant={coupon.isFeatured ? "warning" : "secondary"}
-                      className={`rounded-full text-[10px] font-bold py-0.5 px-2.5 border-0 shadow-none ${
-                        coupon.isFeatured
-                          ? "bg-brand-warning/10 text-brand-warning hover:bg-brand-warning/10"
-                          : "bg-brand-subtext/15 text-brand-subtext hover:bg-brand-subtext/15"
-                      }`}
-                    >
-                      {coupon.isFeatured
-                        ? "Homepage Featured"
-                        : "Regular Listing"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="p-4 text-right">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleToggleFeatured(coupon.id)}
-                      className={`text-xs py-1.5 px-4 font-bold flex items-center gap-1.5 justify-center ml-auto h-auto cursor-pointer shadow-none ${
-                        coupon.isFeatured
-                          ? "border-brand-warning/30 text-brand-warning hover:bg-brand-warning/5 hover:text-brand-warning"
-                          : "border-brand-blue/30 text-brand-blue hover:bg-brand-blue/5 hover:text-brand-blue"
-                      }`}
-                    >
-                      {coupon.isFeatured
-                        ? <StarOff className="w-3.5 h-3.5" />
-                        : <Star className="w-3.5 h-3.5 fill-current" />}
-                      <span>
-                        {coupon.isFeatured ? "Unfeature" : "Feature Deal"}
-                      </span>
-                    </Button>
+              {loading ? (
+                <TableRow className="hover:bg-transparent">
+                  <TableCell colSpan={4} className="p-8 text-center text-brand-subtext font-semibold h-auto">
+                    <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-brand-blue" />
+                    <span>Loading coupon listings...</span>
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : filteredCoupons.length === 0 ? (
+                <TableRow className="hover:bg-transparent">
+                  <TableCell colSpan={4} className="p-8 text-center text-brand-subtext font-semibold h-auto">
+                    No coupons found matching your search.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredCoupons.map((coupon) => (
+                  <TableRow
+                    key={coupon._id}
+                    className="hover:bg-brand-surface/40 transition-colors border-b border-brand-border last:border-b-0"
+                  >
+                    <TableCell className="p-4 font-bold text-brand-navy h-auto">
+                      {coupon.merchantId?.businessName || "Unknown Brand"}
+                    </TableCell>
+                    <TableCell className="p-4">{coupon.title}</TableCell>
+                    <TableCell className="p-4">
+                      <Badge
+                        variant={coupon.isFeatured ? "warning" : "secondary"}
+                        className={`rounded-full text-[10px] font-bold py-0.5 px-2.5 border-0 shadow-none ${
+                          coupon.isFeatured
+                            ? "bg-brand-warning/10 text-brand-warning hover:bg-brand-warning/10"
+                            : "bg-brand-subtext/15 text-brand-subtext hover:bg-brand-subtext/15"
+                        }`}
+                      >
+                        {coupon.isFeatured
+                          ? "Homepage Featured"
+                          : "Regular Listing"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="p-4 text-right">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleToggleFeatured(coupon._id, coupon.isFeatured)}
+                        className={`text-xs py-1.5 px-4 font-bold flex items-center gap-1.5 justify-center ml-auto h-auto cursor-pointer shadow-none ${
+                          coupon.isFeatured
+                            ? "border-brand-warning/30 text-brand-warning hover:bg-brand-warning/5 hover:text-brand-warning"
+                            : "border-brand-blue/30 text-brand-blue hover:bg-brand-blue/5 hover:text-brand-blue"
+                        }`}
+                      >
+                        {coupon.isFeatured ? (
+                          <StarOff className="w-3.5 h-3.5" />
+                        ) : (
+                          <Star className="w-3.5 h-3.5 fill-current" />
+                        )}
+                        <span>
+                          {coupon.isFeatured ? "Unfeature" : "Feature Deal"}
+                        </span>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>

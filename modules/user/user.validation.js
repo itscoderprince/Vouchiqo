@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 export const updateUserSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  phone: z.string().min(1).max(30).optional(),
   location: z
     .object({
       city: z.string().min(1).max(100).optional(),
@@ -8,6 +10,10 @@ export const updateUserSchema = z.object({
       country: z.string().min(1).max(100).optional(),
     })
     .optional(),
+  interests: z.array(z.string()).optional(),
+  emailNotifications: z.boolean().optional(),
+  smsNotifications: z.boolean().optional(),
+  expiryAlerts: z.boolean().optional(),
 });
 
 export const userQuerySchema = z.object({

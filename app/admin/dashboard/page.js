@@ -8,7 +8,9 @@ import {
   Store,
   Tag,
   Users,
+  RefreshCw,
 } from "lucide-react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import DashboardLayout from "@/components/DashboardLayout";
 import KPICard from "@/components/KPICard";
@@ -23,35 +25,41 @@ import {
 } from "@/components/ui/table";
 
 export default function AdminDashboard() {
-  // Mock Admin User
   const adminUser = { name: "Platform Admin", role: "admin" };
+  const [data, setData] = useState({
+    kpis: {
+      totalUsers: 0,
+      totalMerchants: 0,
+      activeCoupons: 0,
+      monthlyRevenue: 0.00
+    },
+    pendingActions: []
+  });
+  const [loading, setLoading] = useState(true);
 
-  const pendingApprovals = [
-    {
-      type: "Merchant",
-      name: "Nike Retail Outlet",
-      date: "Today",
-      status: "Pending approval",
-    },
-    {
-      type: "Coupon",
-      name: "Starbucks: 30% Off espresso",
-      date: "Yesterday",
-      status: "Pending moderation",
-    },
-    {
-      type: "Merchant",
-      name: "Microsoft SaaS",
-      date: "2 days ago",
-      status: "Pending review",
-    },
-  ];
+  const fetchAnalytics = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/admin/analytics");
+      const json = await res.json();
+      if (json.status === "success" && json.data) {
+        setData(json.data);
+      }
+    } catch (err) {
+      console.error("Error fetching admin analytics:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAnalytics();
+  }, []);
 
   return (
     <DashboardLayout title="Admin Dashboard" user={adminUser}>
       {/* Welcome Banner */}
-      <div className="bg-brand-navy text-white p-6 rounded-xl relative overflow-hidden shadow-sm flex items-center justify-between">
-        <div className="absolute inset-0 bg-brand-gradient opacity-10"></div>
+      <div className="bg-brand-navy text-white p-6 rounded-[16px] relative overflow-hidden shadow-sm flex items-center justify-between">
         <div className="relative z-10 space-y-1">
           <h2 className="text-xl font-bold font-heading">Control Console</h2>
           <p className="text-xs text-slate-300">
@@ -69,26 +77,26 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <KPICard
           title="Total Platform Users"
-          value="1,842 Members"
-          change={8.2}
+          value={`${data.kpis.totalUsers} Members`}
+          change={null}
           icon={Users}
         />
         <KPICard
           title="Registered Merchants"
-          value="184 Brands"
-          change={12.4}
+          value={`${data.kpis.totalMerchants} Brands`}
+          change={null}
           icon={Store}
         />
         <KPICard
           title="Active Vouchers Listed"
-          value="482 Coupons"
-          change={5.3}
+          value={`${data.kpis.activeCoupons} Coupons`}
+          change={null}
           icon={Tag}
         />
         <KPICard
           title="Monthly SaaS Revenue"
-          value="$8,940.50"
-          change={16.2}
+          value={`$${data.kpis.monthlyRevenue.toFixed(2)}`}
+          change={null}
           icon={DollarSign}
         />
       </div>
@@ -96,7 +104,7 @@ export default function AdminDashboard() {
       {/* Approval list & stats splits */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Pending approvals (Left - 2 cols) */}
-        <div className="lg:col-span-2 bg-brand-bg border border-brand-border rounded-xl shadow-sm overflow-hidden flex flex-col justify-between">
+        <div className="lg:col-span-2 bg-brand-bg border border-brand-border rounded-[16px] shadow-sm overflow-hidden flex flex-col justify-between">
           <div className="p-5 border-b border-brand-border flex items-center justify-between">
             <h3 className="font-heading text-sm font-bold text-brand-navy tracking-tight uppercase">
               Pending System Actions
@@ -124,45 +132,60 @@ export default function AdminDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody className="divide-y divide-brand-border font-semibold text-brand-text">
-                {pendingApprovals.map((app, idx) => (
-                  <TableRow
-                    key={idx}
-                    className="hover:bg-brand-surface/40 transition-colors border-b border-brand-border last:border-b-0"
-                  >
-                    <TableCell className="p-4 h-auto">
-                      <Badge
-                        className={`rounded text-[10px] font-bold py-0.5 px-2.5 border-0 shadow-none hover:opacity-90 cursor-default ${
-                          app.type === "Merchant"
-                            ? "bg-brand-blue/15 text-brand-blue hover:bg-brand-blue/15"
-                            : "bg-brand-warning/15 text-brand-warning hover:bg-brand-warning/15"
-                        }`}
-                      >
-                        {app.type}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="p-4 font-bold text-brand-navy">
-                      {app.name}
-                    </TableCell>
-                    <TableCell className="p-4 text-brand-subtext">
-                      {app.date}
-                    </TableCell>
-                    <TableCell className="p-4 text-brand-subtext">
-                      {app.status}
-                    </TableCell>
-                    <TableCell className="p-4 text-right">
-                      <Link
-                        href={
-                          app.type === "Merchant"
-                            ? "/admin/approvals/merchants"
-                            : "/admin/approvals/coupons"
-                        }
-                        className="text-brand-blue hover:underline font-bold"
-                      >
-                        Review
-                      </Link>
+                {loading ? (
+                  <TableRow className="hover:bg-transparent">
+                    <TableCell colSpan={5} className="p-8 text-center text-brand-subtext font-semibold h-auto">
+                      <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-brand-blue" />
+                      <span>Loading pending items...</span>
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : data.pendingActions.length === 0 ? (
+                  <TableRow className="hover:bg-transparent">
+                    <TableCell colSpan={5} className="p-8 text-center text-brand-subtext font-semibold h-auto">
+                      No pending system moderation items.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  data.pendingActions.map((app, idx) => (
+                    <TableRow
+                      key={idx}
+                      className="hover:bg-brand-surface/40 transition-colors border-b border-brand-border last:border-b-0"
+                    >
+                      <TableCell className="p-4 h-auto">
+                        <Badge
+                          className={`rounded text-[10px] font-bold py-0.5 px-2.5 border-0 shadow-none hover:opacity-90 cursor-default ${
+                            app.type === "Merchant"
+                              ? "bg-brand-blue/15 text-brand-blue hover:bg-brand-blue/15"
+                              : "bg-brand-warning/15 text-brand-warning hover:bg-brand-warning/15"
+                          }`}
+                        >
+                          {app.type}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="p-4 font-bold text-brand-navy">
+                        {app.name}
+                      </TableCell>
+                      <TableCell className="p-4 text-brand-subtext">
+                        {app.date}
+                      </TableCell>
+                      <TableCell className="p-4 text-brand-subtext">
+                        {app.status}
+                      </TableCell>
+                      <TableCell className="p-4 text-right">
+                        <Link
+                          href={
+                            app.type === "Merchant"
+                              ? "/admin/approvals/merchants"
+                              : "/admin/approvals/coupons"
+                          }
+                          className="text-brand-blue hover:underline font-bold"
+                        >
+                          Review
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
@@ -170,7 +193,7 @@ export default function AdminDashboard() {
 
         {/* Quick stats details / notifications panel (Right - 1 col) */}
         <div className="space-y-6">
-          <div className="bg-brand-bg border border-brand-border rounded-xl p-5 shadow-sm space-y-4">
+          <div className="bg-brand-bg border border-brand-border rounded-[16px] p-5 shadow-sm space-y-4">
             <h3 className="font-heading text-sm font-bold text-brand-navy uppercase tracking-wider border-b border-brand-border pb-3">
               System Alerts
             </h3>

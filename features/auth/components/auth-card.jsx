@@ -8,8 +8,8 @@ import Link from "next/link";
  */
 export function AuthCard({ title, loading = false, children }) {
   return (
-    <div className="min-h-screen bg-brand-surface flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-4">
+    <div className="min-h-screen bg-brand-surface flex flex-col justify-center items-center py-6 px-3 sm:px-6 lg:px-8">
+      <div className="w-full sm:mx-auto sm:max-w-md text-center space-y-4">
         <Link href="/" className="inline-flex flex-col items-center">
           <span className="text-2xl font-bold font-heading text-brand-navy tracking-tight flex items-center gap-1.5">
             <span className="text-brand-gradient">
@@ -26,8 +26,8 @@ export function AuthCard({ title, loading = false, children }) {
         </h2>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-brand-bg py-8 px-4 border border-brand-border rounded-xl shadow-sm sm:px-10 space-y-6">
+      <div className="mt-6 sm:mt-8 w-full sm:mx-auto sm:max-w-md">
+        <div className="bg-brand-bg py-6 px-4 border border-brand-border rounded-xl shadow-sm sm:py-8 sm:px-10 space-y-6">
           {loading ? (
             <div className="flex justify-center py-8">
               <Loader2 className="w-6 h-6 animate-spin text-brand-subtext" />

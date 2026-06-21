@@ -98,6 +98,8 @@ const couponSchema = new Schema(
     // Admin-controlled flags
     isFeatured: { type: Boolean, default: false, index: true },
     isHot: { type: Boolean, default: false, index: true },
+    isVerified: { type: Boolean, default: false, index: true },
+    rejectionReason: { type: String },
   },
   {
     timestamps: true,

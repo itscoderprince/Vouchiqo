@@ -10,9 +10,9 @@ export default function KPICard({
   timeFrame = "vs last month",
 }) {
   return (
-    <Card className="bg-brand-bg border border-brand-border rounded-lg py-0 shadow-sm overflow-hidden relative flex flex-col justify-between h-full hover:shadow-md transition-shadow">
-      {/* Top Gradient Highlight Accent */}
-      <div className="h-1 bg-brand-gradient w-full absolute top-0 left-0"></div>
+    <Card className="bg-brand-bg border border-brand-border rounded-[16px] py-0 shadow-sm overflow-hidden relative flex flex-col justify-between h-full hover:shadow-md transition-shadow">
+      {/* Top Navy Highlight Accent */}
+      <div className="h-1 bg-brand-navy w-full absolute top-0 left-0"></div>
 
       <CardContent className="p-5 pt-6">
         <div className="flex items-center justify-between mb-3">

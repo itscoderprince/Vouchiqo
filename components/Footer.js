@@ -122,7 +122,7 @@ export default function Footer() {
                 placeholder="Enter your email"
                 className="bg-transparent text-sm w-full focus:outline-none px-2 text-white placeholder-slate-400"
               />
-              <button className="bg-brand-gradient text-white p-2 rounded-md hover:opacity-90 transition-opacity">
+              <button className="bg-brand-blue text-white p-2 rounded-[10px] hover:opacity-90 transition-opacity cursor-pointer">
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>

@@ -64,6 +64,7 @@ export const couponQuerySchema = z.object({
   category: z.enum(COUPON_CATEGORIES).optional(),
   search: z.string().max(100).optional(),
   city: z.string().optional(),
+  pincode: z.string().optional(),
   discountType: z.enum(["percentage", "fixed", "freebie"]).optional(),
   sortBy: z
     .enum(["createdAt", "expiresAt", "totalClaims", "discountValue"])

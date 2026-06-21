@@ -1,7 +1,7 @@
 "use client";
 
-import { Check, Copy, History } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Check, Copy, History, Loader2 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import EmptyState from "@/components/EmptyState";
 import { Badge } from "@/components/ui/badge";
@@ -13,31 +13,38 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import toast from "react-hot-toast";
 
 export default function ClaimedCoupons() {
   const [copiedIndex, setCopiedIndex] = useState(null);
+  const [redemptions, setRedemptions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock claimed history
-  const claims = [
-    {
-      brand: "Zomato Delivery",
-      offer: "50% OFF your next food order",
-      code: "VOUCH-ZOMATO-48A",
-      claimedAt: "2026-06-17",
-      status: "Active",
-    },
-    {
-      brand: "Starbucks Coffee",
-      offer: "Buy One Get One Free",
-      code: "VOUCH-BOGO-COFFEE",
-      claimedAt: "2026-06-15",
-      status: "Redeemed",
-    },
-  ];
+  useEffect(() => {
+    async function loadRedemptions() {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/redemptions");
+        if (res.ok) {
+          const payload = await res.json();
+          if (payload.success) {
+            setRedemptions(payload.data.redemptions || []);
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to load redemption history.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadRedemptions();
+  }, []);
 
   const handleCopy = (code, idx) => {
     navigator.clipboard.writeText(code);
     setCopiedIndex(idx);
+    toast.success("Code copied!");
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
@@ -46,84 +53,96 @@ export default function ClaimedCoupons() {
       title="Claimed Coupons"
       user={{ name: "Sarah Jenkins", role: "customer" }}
     >
-      <h2 className="text-base font-bold text-brand-navy font-heading uppercase tracking-wider border-b border-brand-border pb-3">
-        Your Coupon Claims & Redeemed History
-      </h2>
+      <div className="flex justify-between items-center border-b border-brand-border pb-3">
+        <h2 className="text-base font-bold text-brand-navy font-heading uppercase tracking-wider">
+          Your Coupon Claims & Redeemed History
+        </h2>
+        <span className="text-xs text-brand-subtext font-semibold">
+          {redemptions.length} Redemptions
+        </span>
+      </div>
 
-      {claims.length > 0
-        ? <div className="bg-brand-bg border border-brand-border rounded-xl shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <Table className="w-full text-xs">
-                <TableHeader className="bg-brand-surface border-b border-brand-border hover:bg-transparent">
-                  <TableRow className="hover:bg-transparent border-b border-brand-border">
-                    <TableHead className="p-4 text-brand-subtext font-bold uppercase tracking-wider h-auto">
-                      Brand
-                    </TableHead>
-                    <TableHead className="p-4 text-brand-subtext font-bold uppercase tracking-wider h-auto">
-                      Offer
-                    </TableHead>
-                    <TableHead className="p-4 text-brand-subtext font-bold uppercase tracking-wider h-auto">
-                      Voucher Code
-                    </TableHead>
-                    <TableHead className="p-4 text-brand-subtext font-bold uppercase tracking-wider h-auto">
-                      Claimed Date
-                    </TableHead>
-                    <TableHead className="p-4 text-brand-subtext font-bold uppercase tracking-wider h-auto">
-                      Status
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody className="divide-y divide-brand-border font-semibold text-brand-text">
-                  {claims.map((claim, idx) => (
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-brand-subtext" />
+        </div>
+      ) : redemptions.length > 0 ? (
+        <div className="bg-brand-bg border border-brand-border rounded-xl shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table className="w-full text-xs">
+              <TableHeader className="bg-brand-surface border-b border-brand-border hover:bg-transparent">
+                <TableRow className="hover:bg-transparent border-b border-brand-border">
+                  <TableHead className="p-4 text-brand-subtext font-bold uppercase tracking-wider h-auto">
+                    Brand
+                  </TableHead>
+                  <TableHead className="p-4 text-brand-subtext font-bold uppercase tracking-wider h-auto">
+                    Offer
+                  </TableHead>
+                  <TableHead className="p-4 text-brand-subtext font-bold uppercase tracking-wider h-auto">
+                    Voucher Code
+                  </TableHead>
+                  <TableHead className="p-4 text-brand-subtext font-bold uppercase tracking-wider h-auto">
+                    Redeemed Date
+                  </TableHead>
+                  <TableHead className="p-4 text-brand-subtext font-bold uppercase tracking-wider h-auto">
+                    Saved Value
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody className="divide-y divide-brand-border font-semibold text-brand-text">
+                {redemptions.map((red, idx) => {
+                  const dateStr = new Date(red.createdAt).toLocaleDateString("en-IN", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  });
+                  const brandName = red.merchantId?.businessName || "Unknown Merchant";
+                  const couponTitle = red.couponId?.title || `${red.discountValue}% OFF`;
+
+                  return (
                     <TableRow
-                      key={idx}
+                      key={red._id}
                       className="hover:bg-brand-surface/40 transition-colors border-b border-brand-border last:border-b-0"
                     >
                       <TableCell className="p-4 font-bold text-brand-navy">
-                        {claim.brand}
+                        {brandName}
                       </TableCell>
-                      <TableCell className="p-4">{claim.offer}</TableCell>
+                      <TableCell className="p-4">{couponTitle}</TableCell>
                       <TableCell className="p-4">
                         <div className="flex items-center gap-2">
                           <span className="font-mono bg-brand-surface border border-brand-border px-2.5 py-1 rounded text-brand-navy tracking-wide font-bold">
-                            {claim.code}
+                            {red.couponCode}
                           </span>
                           <button
-                            onClick={() => handleCopy(claim.code, idx)}
-                            className="text-brand-subtext hover:text-brand-blue p-1 rounded hover:bg-brand-surface transition-all"
+                            onClick={() => handleCopy(red.couponCode, idx)}
+                            className="text-brand-subtext hover:text-brand-blue p-1 rounded hover:bg-brand-surface transition-all cursor-pointer"
                           >
-                            {copiedIndex === idx
-                              ? <Check className="w-3.5 h-3.5 text-brand-success" />
-                              : <Copy className="w-3.5 h-3.5" />}
+                            {copiedIndex === idx ? (
+                              <Check className="w-3.5 h-3.5 text-brand-success" />
+                            ) : (
+                              <Copy className="w-3.5 h-3.5" />
+                            )}
                           </button>
                         </div>
                       </TableCell>
-                      <TableCell className="p-4">{claim.claimedAt}</TableCell>
-                      <TableCell className="p-4">
-                        <Badge
-                          variant={
-                            claim.status === "Active" ? "success" : "secondary"
-                          }
-                          className={`rounded-full text-[10px] font-bold py-0.5 px-2.5 border-0 shadow-none ${
-                            claim.status === "Active"
-                              ? "bg-brand-success/15 text-brand-success hover:bg-brand-success/15"
-                              : "bg-brand-subtext/15 text-brand-subtext hover:bg-brand-subtext/15"
-                          }`}
-                        >
-                          {claim.status}
-                        </Badge>
+                      <TableCell className="p-4">{dateStr}</TableCell>
+                      <TableCell className="p-4 text-brand-success font-bold">
+                        ₹{red.savingsAmount?.toLocaleString("en-IN") || "0"}
                       </TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  );
+                })}
+              </TableBody>
+            </Table>
           </div>
-        : <EmptyState
-            icon={History}
-            title="No claims history"
-            description="Your claimed voucher codes will appear here once you redeem them."
-          />}
+        </div>
+      ) : (
+        <EmptyState
+          icon={History}
+          title="No claims history"
+          description="Your claimed voucher codes will appear here once you redeem them."
+        />
+      )}
     </DashboardLayout>
   );
 }

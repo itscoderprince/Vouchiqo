@@ -78,7 +78,7 @@ export function RegisterForm() {
                 placeholder="e.g. Starbucks"
                 value={businessName}
                 onChange={(e) => setBusinessName(e.target.value)}
-                className="text-xs placeholder-brand-subtext h-full"
+                className="text-base md:text-sm placeholder-brand-subtext h-full"
                 required
               />
             </InputGroup>
@@ -98,7 +98,7 @@ export function RegisterForm() {
               placeholder={role === "merchant" ? "John Doe" : "Sarah Jenkins"}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="text-xs placeholder-brand-subtext h-full"
+              className="text-base md:text-sm placeholder-brand-subtext h-full"
               required
               autoFocus
             />
@@ -118,7 +118,7 @@ export function RegisterForm() {
               placeholder="name@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="text-xs placeholder-brand-subtext h-full"
+              className="text-base md:text-sm placeholder-brand-subtext h-full"
               required
             />
           </InputGroup>
@@ -137,7 +137,7 @@ export function RegisterForm() {
               placeholder="Min. 8 characters"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="text-xs placeholder-brand-subtext h-full"
+              className="text-base md:text-sm placeholder-brand-subtext h-full"
               required
               minLength={8}
             />
@@ -153,7 +153,7 @@ export function RegisterForm() {
           />
           <label
             htmlFor="agree"
-            className="text-xs text-brand-subtext leading-snug cursor-pointer select-none"
+            className="text-xs md:text-sm text-brand-subtext leading-snug cursor-pointer select-none text-left"
           >
             I agree to the{" "}
             <Link
@@ -175,7 +175,7 @@ export function RegisterForm() {
         <Button
           type="submit"
           disabled={isPending}
-          className="btn-primary w-full py-2.5 text-xs font-semibold flex items-center justify-center gap-1 border-0 h-auto cursor-pointer shadow-none"
+          className="btn-primary w-full py-2.5 text-sm font-semibold flex items-center justify-center gap-1 border-0 h-auto cursor-pointer shadow-none"
         >
           <span>
             {isPending ? "Creating Account..." : "Create Free Account"}
@@ -196,7 +196,7 @@ export function RegisterForm() {
       <Button
         type="button"
         onClick={handleGoogleSignIn}
-        className="w-full h-10 border border-brand-border bg-brand-surface hover:bg-brand-bg text-brand-text hover:text-brand-navy flex items-center justify-center gap-2.5 rounded-lg text-xs font-bold transition-all shadow-none cursor-pointer"
+        className="w-full h-10 border border-brand-border bg-brand-surface hover:bg-brand-bg text-brand-text hover:text-brand-navy flex items-center justify-center gap-2.5 rounded-lg text-sm font-bold transition-all shadow-none cursor-pointer"
       >
         <svg className="w-4 h-4" viewBox="0 0 24 24">
           <path
@@ -219,7 +219,7 @@ export function RegisterForm() {
         <span>Continue with Google</span>
       </Button>
 
-      <p className="text-center text-xs font-semibold text-brand-subtext">
+      <p className="text-center text-sm font-semibold text-brand-subtext">
         Have an account?{" "}
         <Link
           href="/auth/login"

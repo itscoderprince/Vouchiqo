@@ -111,27 +111,19 @@ export default function ConfirmationModal({ coupon, onClose, onConfirm }) {
                 </div>
 
                 {/* Code Container */}
-                <div className="bg-brand-surface border border-dashed border-brand-blue/50 rounded-lg p-4 flex items-center justify-between gap-4">
-                  <span className="font-mono font-bold text-lg text-brand-navy tracking-wider uppercase select-all">
+                <div className="border-2 border-dashed border-orange-300 bg-orange-50/40 rounded-xl p-4 flex items-center justify-between gap-4 transition-all duration-200">
+                  <span className="font-mono font-bold text-xl tracking-[0.15em] text-slate-800 uppercase select-all">
                     {voucherCode}
                   </span>
                   <Button
                     onClick={copyToClipboard}
-                    className={`btn-secondary text-xs flex items-center gap-1.5 py-2 px-3.5 border-0 h-auto cursor-pointer ${
+                    className={`text-xs font-semibold py-2 px-4 rounded-lg border-0 h-auto cursor-pointer transition-all duration-200 ${
                       copied
-                        ? "bg-brand-success hover:bg-brand-success"
-                        : "bg-brand-blue"
+                        ? "bg-[#00B67A] text-white"
+                        : "btn-primary shadow-sm"
                     }`}
                   >
-                    {copied
-                      ? <>
-                          <Check className="w-3.5 h-3.5" />
-                          <span>Copied</span>
-                        </>
-                      : <>
-                          <Copy className="w-3.5 h-3.5" />
-                          <span>Copy Code</span>
-                        </>}
+                    {copied ? "✅ Copied!" : "Copy Code"}
                   </Button>
                 </div>
               </div>
@@ -142,7 +134,13 @@ export default function ConfirmationModal({ coupon, onClose, onConfirm }) {
                   reserved for you. Please use this coupon before it expires on{" "}
                   <strong className="text-brand-text">
                     {coupon.expiresAt
-                      ? new Date(coupon.expiresAt).toLocaleDateString()
+                      ? (() => {
+                          const d = new Date(coupon.expiresAt);
+                          const day = String(d.getDate()).padStart(2, "0");
+                          const month = String(d.getMonth() + 1).padStart(2, "0");
+                          const year = d.getFullYear();
+                          return `${day}/${month}/${year}`;
+                        })()
                       : "the expiry date"}
                   </strong>
                   .

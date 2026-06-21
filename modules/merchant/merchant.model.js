@@ -51,6 +51,8 @@ const merchantSchema = new Schema(
     },
 
     location: {
+      address: { type: String, trim: true },
+      pincode: { type: String, trim: true },
       city: { type: String, trim: true },
       state: { type: String, trim: true },
       country: { type: String, trim: true, default: "IN" },
@@ -69,6 +71,44 @@ const merchantSchema = new Schema(
       default: MERCHANT_STATUS.PENDING,
       index: true,
     },
+
+    // Subscription & Plan gating
+    plan: {
+      type: String,
+      enum: ["starter", "growth", "pro", "enterprise"],
+      default: "starter",
+      index: true,
+    },
+    planExpiry: { type: Date, default: null },
+
+    // Brand Page details
+    shortDescription: {
+      type: String,
+      trim: true,
+      maxlength: [300, "Short description cannot exceed 300 characters"],
+    },
+    longDescription: {
+      type: String,
+      trim: true,
+      maxlength: [1000, "Long description cannot exceed 1000 characters"],
+    },
+    contactPhone: { type: String, trim: true },
+    whatsappNumber: { type: String, trim: true },
+    businessType: {
+      type: String,
+      enum: ["online", "physical", "both"],
+      default: "both",
+    },
+    operatingHours: {
+      type: Schema.Types.Mixed,
+      default: {},
+    },
+
+    // Analytics KPIs
+    tickerImpressions: { type: Number, default: 0 },
+    brandPageViews: { type: Number, default: 0 },
+    revivalCredits: { type: Number, default: 0 },
+    revivalCreditsUsed: { type: Number, default: 0 },
 
     // Denormalized counters — updated via background jobs or atomic $inc
     totalCoupons: { type: Number, default: 0 },

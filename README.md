@@ -182,11 +182,8 @@ node workers/analytics.worker.js
 
 ## 🔑 Test Credentials (Seeded Accounts)
 
-| Role | Email Address | Password | Profile / Brand Name |
+| Role | Email Address | Password | Key Actions to Test |
 | :--- | :--- | :--- | :--- |
-| **Customer** | `customer@vouchiqo.com` | `Password123!` | Alice Johnson |
-| **Customer 2** | `customer2@vouchiqo.com` | `Password123!` | Bob Smith |
-| **Merchant 1** | `merchant@vouchiqo.com` | `Merchant@123!` | Burger House |
-| **Merchant 2** | `merchant2@vouchiqo.com` | `Merchant@123!` | StyleZone |
-| **Merchant 3** | `merchant3@vouchiqo.com` | `Merchant@123!` | TechGadgets |
-| **Admin** | `admin@vouchiqo.com` | `Admin@123!` | Super Admin |
+| **Admin** | `admin@vouchiqo.com` | `Admin@123!` | Moderate merchants at `/admin/approvals/merchants`<br>Moderate revival requests at `/admin/revivals`<br>Manage featured deals at `/admin/featured`<br>Manage users (suspend/activate) at `/admin/users` |
+| **Merchant** | `merchant@vouchiqo.com` | `Merchant@123!` | Create a new coupon at `/merchant/coupons/new`<br>View sales analytics at `/merchant/dashboard` and `/merchant/analytics` |
+| **Customer** | `customer@vouchiqo.com` | `Password123!` | Filter deals by keyword or location ("Arrah", "Patna", "Delhi") at `/deals`<br>Claim coupons and view saving summaries in `/customer/dashboard` |

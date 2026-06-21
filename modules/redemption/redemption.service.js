@@ -198,3 +198,178 @@ function calculateSavings(coupon) {
   }
   return 0;
 }
+
+/**
+ * Get aggregated customer savings analytics.
+ * 
+ * @param {string} userId
+ */
+export async function getSavingsAnalytics(userId) {
+  // 1. Fetch all redemptions sorted chronologically for milestones
+  const allRedemptions = await Redemption.find({ userId })
+    .populate("couponId", "title category image")
+    .populate("merchantId", "businessName logo slug")
+    .sort({ createdAt: 1 })
+    .lean();
+
+  // Calculate lifetime totals
+  let totalSavedAllTime = 0;
+  let totalSpentAllTime = 0;
+  let totalSavedMonth = 0;
+  let totalSpentMonth = 0;
+  
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth(); // 0-indexed
+
+  for (const r of allRedemptions) {
+    const saved = r.savingsAmount || 0;
+    const spent = r.originalPrice > saved ? (r.originalPrice - saved) : (saved * 2); // 50% discount fallback
+    
+    totalSavedAllTime += saved;
+    totalSpentAllTime += spent;
+
+    const rDate = new Date(r.createdAt);
+    if (rDate.getFullYear() === currentYear && rDate.getMonth() === currentMonth) {
+      totalSavedMonth += saved;
+      totalSpentMonth += spent;
+    }
+  }
+
+  const savingsRate = totalSpentAllTime > 0 
+    ? Math.round((totalSavedAllTime / totalSpentAllTime) * 100) 
+    : 0;
+
+  // 2. Generate 12-month timeline array
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const timeline = [];
+  
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date();
+    d.setMonth(d.getMonth() - i);
+    const mIndex = d.getMonth();
+    const year = d.getFullYear();
+    
+    timeline.push({
+      label: `${months[mIndex]} ${year}`,
+      year,
+      month: mIndex,
+      saved: 0,
+      spent: 0,
+      count: 0
+    });
+  }
+
+  for (const r of allRedemptions) {
+    const rDate = new Date(r.createdAt);
+    const rYear = rDate.getFullYear();
+    const rMonth = rDate.getMonth();
+    
+    const entry = timeline.find(t => t.year === rYear && t.month === rMonth);
+    if (entry) {
+      const saved = r.savingsAmount || 0;
+      const spent = r.originalPrice > saved ? (r.originalPrice - saved) : (saved * 2);
+      
+      entry.saved += saved;
+      entry.spent += spent;
+      entry.count += 1;
+    }
+  }
+
+  // 3. Category breakdown
+  const categoryMap = {};
+  for (const r of allRedemptions) {
+    const categoryRaw = r.couponId?.category || "Other";
+    const category = categoryRaw.charAt(0).toUpperCase() + categoryRaw.slice(1);
+    
+    categoryMap[category] = (categoryMap[category] || 0) + (r.savingsAmount || 0);
+  }
+
+  const categoryBreakdown = Object.entries(categoryMap).map(([category, saved]) => ({
+    category,
+    saved,
+    pct: totalSavedAllTime > 0 ? Math.round((saved / totalSavedAllTime) * 100) : 0
+  })).sort((a, b) => b.saved - a.saved);
+
+  // 4. Brand breakdown
+  const brandMap = {};
+  for (const r of allRedemptions) {
+    const brandName = r.merchantId?.businessName || "Unknown Brand";
+    const brandLogo = r.merchantId?.logo || "";
+    
+    if (!brandMap[brandName]) {
+      brandMap[brandName] = { brand: brandName, logo: brandLogo, claims: 0, saved: 0 };
+    }
+    brandMap[brandName].claims += 1;
+    brandMap[brandName].saved += r.savingsAmount || 0;
+  }
+
+  const brandBreakdown = Object.values(brandMap)
+    .sort((a, b) => b.saved - a.saved)
+    .slice(0, 5)
+    .map(b => ({
+      ...b,
+      saved: `₹${b.saved.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    }));
+
+  // 5. Milestones check
+  const thresholds = [
+    { id: "m1", title: "First Saving ₹50+", value: 50 },
+    { id: "m2", title: "₹500 Saved", value: 500 },
+    { id: "m3", title: "₹1,000 Saved", value: 1000 },
+    { id: "m4", title: "₹5,000 Saved", value: 5000 },
+    { id: "m5", title: "₹10,000 Saved", value: 10000 }
+  ];
+
+  let cumulative = 0;
+  const milestones = thresholds.map(t => {
+    let achieved = false;
+    let achievedAt = null;
+
+    cumulative = 0;
+    for (const r of allRedemptions) {
+      cumulative += r.savingsAmount || 0;
+      if (cumulative >= t.value) {
+        achieved = true;
+        achievedAt = r.createdAt;
+        break;
+      }
+    }
+
+    return {
+      id: t.id,
+      title: t.title,
+      threshold: t.value,
+      achieved,
+      achievedAt
+    };
+  });
+
+  // Recent transactions list (reverse chronological)
+  const recentTransactions = [...allRedemptions].reverse().map(r => ({
+    _id: r._id,
+    date: new Date(r.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+    brand: r.merchantId?.businessName || "Unknown Brand",
+    code: r.couponCode,
+    originalPrice: r.originalPrice ? `₹${r.originalPrice.toLocaleString("en-IN")}` : "—",
+    discountApplied: r.discountType === "percentage" ? `${r.discountValue}% OFF` : `₹${r.discountValue} OFF`,
+    amountPaid: r.originalPrice ? `₹${(r.originalPrice - r.savingsAmount).toLocaleString("en-IN")}` : "—",
+    amountSaved: `₹${r.savingsAmount.toLocaleString("en-IN")}`,
+    category: r.couponId?.category ? r.couponId.category.charAt(0).toUpperCase() + r.couponId.category.slice(1) : "Other"
+  }));
+
+  return {
+    kpis: {
+      totalSavedMonth,
+      totalSavedAllTime,
+      totalSpentAllTime,
+      savingsRate,
+      couponUses: allRedemptions.length
+    },
+    timeline,
+    categoryBreakdown,
+    brandBreakdown,
+    milestones,
+    recentTransactions
+  };
+}

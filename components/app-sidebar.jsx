@@ -13,6 +13,8 @@ import {
   Tag,
   TrendingUp,
   Users,
+  MapPin,
+  Sparkles,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { NavMain } from "@/components/nav-main";
@@ -124,6 +126,16 @@ export function AppSidebar({ ...props }) {
             url: "/admin/revivals",
             icon: <AlertCircle className="size-4" />,
           },
+          {
+            title: "Platform Revenue",
+            url: "/admin/revenue",
+            icon: <CreditCard className="size-4" />,
+          },
+          {
+            title: "Platform Content",
+            url: "/admin/content",
+            icon: <Settings className="size-4" />,
+          },
         ];
       case "merchant":
         return [
@@ -141,6 +153,11 @@ export function AppSidebar({ ...props }) {
             title: "Create Coupon",
             url: "/merchant/coupons/new",
             icon: <PlusCircle className="size-4" />,
+          },
+          {
+            title: "Campaigns",
+            url: "/merchant/campaigns",
+            icon: <Sparkles className="size-4" />,
           },
           {
             title: "Business Analytics",
@@ -166,28 +183,33 @@ export function AppSidebar({ ...props }) {
             icon: <LayoutDashboard className="size-4" />,
           },
           {
-            title: "Savings Dashboard",
-            url: "/customer/savings",
+            title: "My Savings",
+            url: "/profile?tab=savings",
             icon: <TrendingUp className="size-4" />,
           },
           {
-            title: "Saved Coupons",
-            url: "/customer/saved",
+            title: "Saved Deals",
+            url: "/profile?tab=saved",
             icon: <Bookmark className="size-4" />,
           },
           {
-            title: "Claimed Coupons",
-            url: "/customer/claimed",
+            title: "Cashback Wallet",
+            url: "/profile?tab=wallet",
+            icon: <CreditCard className="size-4" />,
+          },
+          {
+            title: "My Activity",
+            url: "/profile?tab=activity",
             icon: <History className="size-4" />,
           },
           {
-            title: "Followed Brands",
-            url: "/customer/brands",
-            icon: <Store className="size-4" />,
+            title: "Nearby Offers",
+            url: "/profile?tab=nearby",
+            icon: <MapPin className="size-4" />,
           },
           {
             title: "Settings",
-            url: "/profile/settings",
+            url: "/profile?tab=settings",
             icon: <Settings className="size-4" />,
           },
         ];

@@ -50,6 +50,16 @@ export default function Sidebar({ role = "customer" }) {
             href: "/admin/revivals",
             icon: AlertCircle,
           },
+          {
+            name: "Platform Revenue",
+            href: "/admin/revenue",
+            icon: CreditCard,
+          },
+          {
+            name: "Platform Content",
+            href: "/admin/content",
+            icon: Settings,
+          },
         ];
       case "merchant":
         return [

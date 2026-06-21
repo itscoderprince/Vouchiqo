@@ -53,7 +53,7 @@ export function LoginForm() {
               placeholder="name@company.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="text-xs placeholder-brand-subtext h-full"
+              className="text-base md:text-sm placeholder-brand-subtext h-full"
               required
               autoFocus
             />
@@ -67,7 +67,7 @@ export function LoginForm() {
             </Label>
             <Link
               href="/auth/forgot-password"
-              className="text-xs text-brand-blue font-bold hover:underline"
+              className="text-xs md:text-sm text-brand-blue font-bold hover:underline"
             >
               Forgot?
             </Link>
@@ -81,7 +81,7 @@ export function LoginForm() {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="text-xs placeholder-brand-subtext h-full"
+              className="text-base md:text-sm placeholder-brand-subtext h-full"
               required
             />
           </InputGroup>
@@ -90,7 +90,7 @@ export function LoginForm() {
         <Button
           type="submit"
           disabled={isPending}
-          className="btn-primary w-full py-2.5 text-xs font-semibold flex items-center justify-center gap-1 border-0 h-auto cursor-pointer shadow-none"
+          className="btn-primary w-full py-2.5 text-sm font-semibold flex items-center justify-center gap-1 border-0 h-auto cursor-pointer shadow-none"
         >
           <span>{isPending ? "Signing in..." : "Sign In"}</span>
           <ArrowRight className="w-3.5 h-3.5" />
@@ -109,7 +109,7 @@ export function LoginForm() {
       <Button
         type="button"
         onClick={handleGoogleSignIn}
-        className="w-full h-10 border border-brand-border bg-brand-surface hover:bg-brand-bg text-brand-text hover:text-brand-navy flex items-center justify-center gap-2.5 rounded-lg text-xs font-bold transition-all shadow-none cursor-pointer"
+        className="w-full h-10 border border-brand-border bg-brand-surface hover:bg-brand-bg text-brand-text hover:text-brand-navy flex items-center justify-center gap-2.5 rounded-lg text-sm font-bold transition-all shadow-none cursor-pointer"
       >
         <svg className="w-4 h-4" viewBox="0 0 24 24">
           <path
@@ -132,7 +132,7 @@ export function LoginForm() {
         <span>Continue with Google</span>
       </Button>
 
-      <p className="text-center text-xs font-semibold text-brand-subtext">
+      <p className="text-center text-sm font-semibold text-brand-subtext">
         No account?{" "}
         <Link
           href="/auth/register"

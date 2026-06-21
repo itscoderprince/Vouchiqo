@@ -68,8 +68,7 @@ export default function CustomerDashboard() {
   return (
     <DashboardLayout title="Customer Dashboard" user={user}>
       {/* Welcome Banner */}
-      <div className="bg-brand-navy text-white p-6 rounded-xl relative overflow-hidden shadow-sm">
-        <div className="absolute inset-0 bg-brand-gradient opacity-15"></div>
+      <div className="bg-brand-navy text-white p-6 rounded-[16px] relative overflow-hidden shadow-sm">
         <div className="relative z-10 space-y-1">
           <h2 className="text-xl font-bold font-heading">
             Welcome back, {user.name}!

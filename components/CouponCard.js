@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-export default function CouponCard({ coupon, onRedeem }) {
+export default function CouponCard({ coupon, onRedeem, isLocal = false, isMarbellaLocal = false }) {
   const {
     _id,
     title,
@@ -23,7 +23,7 @@ export default function CouponCard({ coupon, onRedeem }) {
   const discountFormatted =
     discountType === "percentage"
       ? `${discountValue}% OFF`
-      : `$${discountValue} OFF`;
+      : `₹${discountValue} OFF`;
 
   const isExpiringSoon = expiresAt
     ? new Date(expiresAt) - Date.now() < 86400000 * 2 // Less than 2 days
@@ -49,6 +49,16 @@ export default function CouponCard({ coupon, onRedeem }) {
             <Badge className="bg-brand-blue/10 text-brand-blue hover:bg-brand-blue/15 border-0 shadow-none px-2.5 py-0.5 rounded-full text-[10px] font-semibold flex items-center gap-1">
               <CheckCircle2 className="w-3.5 h-3.5" />
               <span>Merchant Verified</span>
+            </Badge>
+          )}
+          {isLocal && (
+            <Badge className="bg-orange-500/10 text-[#FF7A18] hover:bg-orange-500/15 border border-[#FF7A18]/20 shadow-none px-2.5 py-0.5 rounded-full text-[10px] font-semibold flex items-center gap-1">
+              <span>🔴 Local Deal</span>
+            </Badge>
+          )}
+          {isMarbellaLocal && (
+            <Badge className="bg-[#FFB020]/10 text-brand-text hover:bg-[#FFB020]/15 border border-[#FFB020]/20 shadow-none px-2.5 py-0.5 rounded-full text-[10px] font-semibold flex items-center gap-1">
+              <span>💼 Local Business</span>
             </Badge>
           )}
         </div>
