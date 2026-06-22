@@ -1,9 +1,10 @@
 "use client";
 
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { HOME_CATEGORIES } from "@/utils/home-data";
 
-export function CategoryStrip() {
+export const CategoryStrip = React.memo(function CategoryStrip() {
   const handleCategoryClick = (categoryName) => {
     const mapping = {
       "Food & Drink": "Food",
@@ -43,4 +44,4 @@ export function CategoryStrip() {
       </div>
     </section>
   );
-}
+});

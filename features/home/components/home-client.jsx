@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { 
   ArrowRight, 
   MapPin, 
   Search, 
   Sparkles, 
-  Clock, 
   Smartphone, 
   CheckCircle2, 
   X, 
@@ -16,11 +16,34 @@ import {
   Heart,
   Loader2
 } from "lucide-react";
-import ConfirmationModal from "@/components/ConfirmationModal";
+
+// Defer static loads of heavy below-the-fold and modal overlay components
+const ConfirmationModal = dynamic(() => import("@/components/ConfirmationModal"), {
+  ssr: false,
+});
+
+const NearbyDeals = dynamic(
+  () => import("@/features/location/components/nearby-deals").then((mod) => mod.NearbyDeals),
+  {
+    loading: () => (
+      <div className="py-20 text-center space-y-2">
+        <Loader2 className="w-8 h-8 animate-spin text-brand-blue mx-auto" />
+        <span className="text-xs text-brand-subtext font-bold">Scanning local coordinates...</span>
+      </div>
+    ),
+    ssr: false,
+  }
+);
+
+const HowItWorks = dynamic(() => import("./how-it-works").then((mod) => mod.HowItWorks));
+const Testimonials = dynamic(() => import("./testimonials").then((mod) => mod.Testimonials));
+const FaqSection = dynamic(() => import("./faq-section").then((mod) => mod.FaqSection));
+const MerchantCTA = dynamic(() => import("./merchant-cta").then((mod) => mod.MerchantCTA));
+const PartnerBrands = dynamic(() => import("./partner-brands").then((mod) => mod.PartnerBrands));
+
 import CouponCard from "@/components/CouponCard";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import { NearbyDeals } from "@/features/location/components/nearby-deals";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -34,11 +57,7 @@ import { HotDealsTicker } from "./hot-deals-ticker";
 import { HeroSection } from "./hero-section";
 import { CategoryStrip } from "./category-strip";
 import { RevivalPromo } from "./revival-promo";
-import { PartnerBrands } from "./partner-brands";
-import { HowItWorks } from "./how-it-works";
-import { Testimonials } from "./testimonials";
-import { FaqSection } from "./faq-section";
-import { MerchantCTA } from "./merchant-cta";
+import { CountdownTimer } from "./countdown-timer";
 import { Badge } from "@/components/ui/badge";
 
 // 10 database-valid categories mapping to friendly icons/labels
@@ -74,9 +93,6 @@ export function HomeClient({ initialCoupons = [], latestCoupons = [] }) {
   const { city, status: locationStatus, detect: detectLocation } = useLocation();
   const [feedTab, setFeedTab] = useState("all");
 
-  // Live countdown timer state
-  const [countdownTime, setCountdownTime] = useState("24:00:00");
-
   // App download capture
   const [appEmail, setAppEmail] = useState("");
   const [appSubscribed, setAppSubscribed] = useState(false);
@@ -105,27 +121,6 @@ export function HomeClient({ initialCoupons = [], latestCoupons = [] }) {
       setFeedTab("all");
     }
   }, [city]);
-
-  // Clock countdown timer
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const now = new Date();
-      const tomorrow = new Date();
-      tomorrow.setHours(24, 0, 0, 0);
-      const diff = tomorrow - now;
-
-      const hrs = Math.floor(diff / (1000 * 60 * 60));
-      const mins = Math.floor((diff / (1000 * 60)) % 60);
-      const secs = Math.floor((diff / 1000) % 60);
-
-      setCountdownTime(
-        `${hrs.toString().padStart(2, "0")}:${mins
-          .toString()
-          .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
-      );
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   // Interest capture banner triggers
   useEffect(() => {
@@ -242,8 +237,13 @@ export function HomeClient({ initialCoupons = [], latestCoupons = [] }) {
     return filtered;
   };
 
-  const finalFeatured = reorderAndFilter(initialCoupons).slice(0, 6);
-  const finalLatest = reorderAndFilter(latestCoupons).slice(0, 6);
+  const finalFeatured = useMemo(() => {
+    return reorderAndFilter(initialCoupons).slice(0, 6);
+  }, [initialCoupons, feedTab, city, savedInterests, forceRefresh]);
+
+  const finalLatest = useMemo(() => {
+    return reorderAndFilter(latestCoupons).slice(0, 6);
+  }, [latestCoupons, feedTab, city, savedInterests, forceRefresh]);
 
   // App download form submit
   const handleAppSubscribe = (e) => {
@@ -345,13 +345,7 @@ export function HomeClient({ initialCoupons = [], latestCoupons = [] }) {
             </div>
             
             {/* Live Countdown Timer */}
-            <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl w-fit">
-              <Clock className="w-4 h-4 text-[#FF7A18] animate-pulse" />
-              <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Ends In:</span>
-              <span className="font-mono text-sm md:text-base font-black text-[#FFB020] tracking-widest">
-                {countdownTime}
-              </span>
-            </div>
+            <CountdownTimer />
           </div>
 
           {/* Horizontally scrollable featured cards */}

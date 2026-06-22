@@ -1,6 +1,7 @@
+import React from "react";
 import { TRENDING_BRANDS } from "@/utils/home-data";
 
-export function PartnerBrands() {
+export const PartnerBrands = React.memo(function PartnerBrands() {
   return (
     <section className="bg-brand-bg border-y border-brand-border py-12 px-4 animate-fade-in-up">
       <div className="max-w-6xl mx-auto">
@@ -25,4 +26,4 @@ export function PartnerBrands() {
       </div>
     </section>
   );
-}
+});

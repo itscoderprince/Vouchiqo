@@ -59,6 +59,7 @@ export default function Navbar({ user: propUser = null }) {
   const [citySearch, setCitySearch] = useState("");
   const locationPanelRef = useRef(null);
   const { city, setCity, status, detect } = useLocation();
+  const [mounted, setMounted] = useState(false);
 
   const filteredCities = citySearch.length > 0
     ? INDIAN_CITIES.filter((c) =>
@@ -68,8 +69,9 @@ export default function Navbar({ user: propUser = null }) {
 
   const isDetecting = status === "detecting";
 
-  // Close location panel on outside click
+  // Close location panel on outside click & track client mount
   useEffect(() => {
+    setMounted(true);
     function handleClickOutside(e) {
       if (locationPanelRef.current && !locationPanelRef.current.contains(e.target)) {
         setShowLocationPanel(false);
@@ -262,17 +264,8 @@ export default function Navbar({ user: propUser = null }) {
             </div>
 
             {/* Auth CTA */}
-            {user
-              ? <Button
-                  asChild
-                  className="btn-secondary text-sm flex items-center gap-2 px-3.5 py-1.5 bg-brand-blue border-0 cursor-pointer"
-                >
-                  <Link href={`/${user.role}/dashboard`}>
-                    <User className="w-4 h-4" />
-                    <span>Dashboard</span>
-                  </Link>
-                </Button>
-              : <>
+            {(!mounted || !user)
+              ? <>
                   <Button
                     asChild
                     variant="ghost"
@@ -290,6 +283,15 @@ export default function Navbar({ user: propUser = null }) {
                     </Link>
                   </Button>
                 </>
+              : <Button
+                  asChild
+                  className="btn-secondary text-sm flex items-center gap-2 px-3.5 py-1.5 bg-brand-blue border-0 cursor-pointer"
+                >
+                  <Link href={`/${user.role}/dashboard`}>
+                    <User className="w-4 h-4" />
+                    <span>Dashboard</span>
+                  </Link>
+                </Button>
             }
           </div>
 
@@ -480,19 +482,7 @@ export default function Navbar({ user: propUser = null }) {
           <hr className="border-white/10" />
 
           <div className="flex flex-col gap-2 pt-2">
-            {user ? (
-              <Button
-                asChild
-                className="btn-secondary w-full text-center py-2.5 bg-brand-blue border-0 cursor-pointer justify-center"
-              >
-                <Link
-                  href={`/${user.role}/dashboard`}
-                  onClick={() => setIsOpen(false)}
-                >
-                  Go to Dashboard
-                </Link>
-              </Button>
-            ) : (
+            {(!mounted || !user) ? (
               <>
                 <Button
                   asChild
@@ -512,6 +502,18 @@ export default function Navbar({ user: propUser = null }) {
                   </Link>
                 </Button>
               </>
+            ) : (
+              <Button
+                asChild
+                className="btn-secondary w-full text-center py-2.5 bg-brand-blue border-0 cursor-pointer justify-center"
+              >
+                <Link
+                  href={`/${user.role}/dashboard`}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Go to Dashboard
+                </Link>
+              </Button>
             )}
           </div>
         </div>

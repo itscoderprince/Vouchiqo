@@ -1,6 +1,7 @@
+import React from "react";
 import { HOW_IT_WORKS_STEPS } from "@/utils/home-data";
 
-export function HowItWorks() {
+export const HowItWorks = React.memo(function HowItWorks() {
   return (
     <section className="py-16 px-4 max-w-5xl mx-auto w-full text-center animate-fade-in-up">
       <h2 className="text-2xl font-bold font-heading text-brand-navy tracking-tight mb-3">
@@ -34,4 +35,4 @@ export function HowItWorks() {
       </div>
     </section>
   );
-}
+});
